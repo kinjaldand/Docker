@@ -1,0 +1,118 @@
+Run docker:
+docker run -d -i -p 1234:1234 --name daemon ubuntu nc -l 1234
+
+    The -d flag, when used with docker run, runs the container as a daemon. 
+    The -i flag gives this container the ability to interact with your Telnet session. 
+    With -p you publish the 1234 port from the container to the host. 
+    The --name flag lets you give the container a name so you can refer to it later.
+    The -t flag creates a tty device (a terminal) for you
+
+Link containers:    
+--link
+
+docker run --name wp-mysql -e MYSQL_ROOT_PASSWORD=yoursecretpassword -d mysql
+docker run --name wordpress --link wp-mysql:mysql -p 10003:80 -d wordpress
+
+    First you give the mysql container the name wp-mysql so you can refer to it later B.
+    You also must supply an environment variable so the mysql container can initialize the
+    database (-e MYSQL_ROOT_PASSWORD=yoursecretpassword). You run both containers
+    as daemons (-d)
+    In the second command C you give the wordpress image the name wordpress, in
+    case you want to refer to it later. You also link the wp-mysql container to the wordpress
+    container (--link wp-mysql:mysql). References to a mysql server within the wordpress
+    container will be sent to the container named wp-mysql. You also use a local port mapping
+    (-p 10003:80), as discussed in technique 5, and add the Docker Hub reference for
+    the official wordpress image (wordpress).
+    STARTUP ORDER MATTERS: The containers must be started up in the correct order
+    so that the mapping can take place on container names that are already in existence.
+    Dynamic resolution of links is not (at the time of writing) a feature of Docker.
+    In order for containers to be linked in this way, their ports must be specified as
+    exposed when building the images. This is achieved using the EXPOSE command
+    within the image build’s Dockerfile
+    
+    
+Run container in detached mode(as deamon):
+--detach/-d
+
+docker run --detach --name web nginx:latest
+
+Run docker in interactive mode:
+docker run --interactive --tty \
+--link web:web \
+--name web_test \
+busybox:latest /bin/sh
+
+    First, the --interactive option tells Docker to keep the standard input
+    stream (stdin) open for the container even if no terminal is attached. Second, the
+    --tty option tells Docker to allocate a virtual terminal for the container, which will
+    allow you to pass signals to the container.
+    It’s possible to create an interactive container, manually start a process inside that
+    container, and then detach your terminal. You can do so by holding down the Crtl (or
+    Control) key and pressing P and then Q. This will work only when you’ve used the
+    --tty option.
+    
+View latest logs of container:
+--follow/-f
+
+View PID in docker:
+docker exec <dockername> ps
+
+create containers without their own PID namespace:
+docker run --pid host busybox:latest ps
+    
+name of a container needs to change:
+docker rename webid webid-old
+
+command to create a container without starting it:
+docker create nginx
+
+write the ID of a new container to a known file:
+docker create --cidfile /tmp/web.cid nginx
+or
+docker run --cidfile /tmp/web.cid nginx
+
+cat /tmp/web.cid    
+    
+command to get contanier id:
+CID=$(docker ps --latest --quiet)
+echo $CID
+CID=$(docker ps -l –q)
+echo $CID
+
+    If you want to get the full container ID, you can use the --no-trunc option on the docker ps command
+
+create read-only container:
+--read-only
+docker run -d --name wp --read-only wordpress:4
+
+check if container is running:
+docker inspect --format "{{.State.Running}}" wp
+
+pass environment variable to docker:
+--env / -e
+docker run --env MY_ENVIRONMENT_VAR="this is a test" busybox:latest 
+
+Remove container as soon as it exits:
+docker run --rm --name auto-exit-test busybox:latest echo Hello World
+    if you’re experimenting with short-lived containers, you can avoid
+    the cleanup burden by specifying --rm on the command. Doing so will automatically
+    remove the container as soon as it enters the exited state
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

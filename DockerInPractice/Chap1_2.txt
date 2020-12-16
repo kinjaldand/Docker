@@ -1,0 +1,54 @@
+Concepts:
+    Images:
+        A Docker image consists of files and metadata
+        These images are made up of one or more layers
+        Image files take up most of the space. Because of the isolation each container provides, they must have their own copy of any required tools, including language environments or libraries.
+        The metadata has information on environment variables, port mappings, volumes etc.
+    Containers:
+        Containers are running systems defined by images. 
+        Docker container can be viewed as a Docker image in execution
+        Image-class, container-object.
+        Containers run one process on startup. When this process completes, the container stops. This startup process can spawn others.
+        Changes to files are stored within the container in a copy-on-write mechanism. The base image cannot be affected by a container.
+        Containers are created from images, inherit their filesystems, and use their metadata to determine their startup configuration. Containers are separate but can be configured to communicate with each other. 
+        Detached means that the container will run in the background, without being attached to any input or output stream.
+        Docker containers run something called an entrypoint before executing the command.
+        Entrypoints are perfect places to put code that validates the preconditions of a container
+    Layers:
+        By default, Docker internally uses a copy-on-write mechanism to reduce the amount of disk space required.
+        Whenever a running container needs to write to a file, it records the change by copying the item to a new area of disk.
+        i.e. Each block represents a running container’s file differences from the original ToDoApp’s image. Uses much less disk space.
+        All three layers can be shared across multiple running containers, much as a shared library can be shared in memory across multiple running processes. This is a vital feature for operations, allowing the running of numerous containers based on different images on host machines without running out of disk space.
+
+Communication between docker:
+    --link flag
+    The containers need to be started in reverse order of their dependency chain
+    The link mechanism injects IP addresses into dependent containers, and containers that aren’t running
+    don’t have IP addresses. If you tried to start a container that has a dependency on a
+    container that isn’t running, Docker wouldn’t have an IP address to inject.
+    
+    
+Docker Architecture:
+    Docker on your host machine is (at the time of writing) split into two parts—a daemon with a RESTful API and a client that talks to the daemon
+        
+PID Namespace:
+    Every running program—or process—on a Linux machine has a unique number called a process identifier (PID).
+    Creating a PID namespace for each container is a critical feature of Docker
+        
+CID File:
+    Docker won’t create a new container using the provided CID file if that file already exists. 
+    The command will fail just as it does when you create two containers with the same name.
+    One reason to use CID files instead of names is that CID files can be shared with
+    containers easily and renamed for that container. This uses a Docker feature called volumes.
+    
+Docker restart:
+    Docker uses an exponential backoff strategy for timing restart attempts
+    Keeping containers running with supervisor and startup processes
+        A supervisor process, or init process, is a program that’s used to launch and maintain
+        the state of other programs. On a Linux system, PID #1 is an init process. It starts all
+        the other system processes and restarts them in the event that they fail unexpectedly
+        
+        Using a supervisor process inside your container will keep the container running
+        in the event that the target process—a web server, for example—fails and is restarted
+
+    
